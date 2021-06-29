@@ -102,7 +102,7 @@ def do_sectral_calibration(data_path, wavelength, save, output_path,
                                channel_pos, sep, save, output_path, plotting)
 
     coeff_poly_wl_to_px, coeff_poly_px_to_wl, spectral_psf = \
-        get_spectral_calibration(wavelength, calib_pos, output_path, save)
+        get_spectral_calibration(wavelength, calib_pos)
 
     if prompt_spectral_resolution:
         display_spectral_resolution(wavelength, calib_pos, coeff_poly_px_to_wl,
@@ -214,7 +214,7 @@ def extract_wl_pos(data_list0, wavelength,
     return calib_pos
 
 
-def get_spectral_calibration(wavelength, calib_pos, output_path):
+def get_spectral_calibration(wavelength, calib_pos):
     """
     Perform the spectral calibration.
 
@@ -222,8 +222,6 @@ def get_spectral_calibration(wavelength, calib_pos, output_path):
     :type wavelength: list
     :param calib_pos: x-coordinates of each wavelength for each channel.
     :type calib_pos: array
-    :param output_path: path where to save or load the intermediate products.
-    :type output_path: string
     :return: coefficients of the polynoms linking wavelength to pixels
             positions and vice versa.
     :rtype: tuple

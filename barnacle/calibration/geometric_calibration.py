@@ -90,7 +90,7 @@ def do_geometric_calibration(data_list, output_path, px_to_wl_coeff,
 
     geo_calib, slices_axes, residuals = \
         get_geometric_calibration(slices, dark, channel_pos, sep, output_path,
-                                  save)
+                                  save, plotting)
 
     if save:
         np.save(output_path+'pattern_coeff', geo_calib)

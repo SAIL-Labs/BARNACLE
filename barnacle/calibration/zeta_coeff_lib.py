@@ -57,7 +57,7 @@ NB_TRACKS = 16  # Number of tracks
 
 def do_zeta_coeff(data_path, output_path,
                   geometric_calibration_path,
-                  spectral_calibration_path, mode_flux,
+                  wl_to_px_coeff, px_to_wl_coeff, mode_flux,
                   spectral_binning=False, wl_bin_min=1525, wl_bin_max=1575,
                   bandwidth_binning=50, nb_img=(None, None),
                   save=True, plotting=True):
@@ -76,8 +76,12 @@ def do_zeta_coeff(data_path, output_path,
     :type output_path: string
     :param geometric_calibration_path: path to the geometric calibration file.
     :type geometric_calibration_path: string
-    :param spectral_calibration_path: path to the spectral calibration file.
-    :type spectral_calibration_path: string
+    :param wl_to_px_coeff: polynomial coefficients of the table converting
+                    wavelength (in nm) into pixel position
+    :type wl_to_px_coeff: array
+    :param px_to_wl_coeff: polynomial coefficients of the table converting
+                    pixel position into wavelength (in nm)
+    :type px_to_wl_coeff: array
     :param mode_flux: mode of measurement of the spectral fluxes among\
                     'amplitude', 'model', 'windowed', 'raw'. 'raw' is\
                         preferred. See documentation of\
@@ -106,9 +110,8 @@ def do_zeta_coeff(data_path, output_path,
 
     """
     zeta_coeff, img2, Imp, photometries = \
-        get_zeta_coeff(data_path, output_path,
-                       geometric_calibration_path,
-                       spectral_calibration_path, nb_img, mode_flux,
+        get_zeta_coeff(data_path, output_path, geometric_calibration_path,
+                       wl_to_px_coeff, px_to_wl_coeff, nb_img, mode_flux,
                        spectral_binning, wl_bin_min, wl_bin_max,
                        bandwidth_binning, save)
 
@@ -295,8 +298,7 @@ def get_zeta_coeff(data_path, output_path, geometric_calibration_path,
                    wl_to_px_coeff, px_to_wl_coeff, nb_img, mode_flux,
                    spectral_binning, wl_bin_min, wl_bin_max,
                    bandwidth_binning, save):
-    """
-    Get the zeta coefficients.
+    """Get the zeta coefficients.
 
     This function is the core of the measurement of the zeta coefficients.
 
@@ -306,11 +308,15 @@ def get_zeta_coeff(data_path, output_path, geometric_calibration_path,
     :type output_path: string
     :param geometric_calibration_path: path to the geometric calibration file.
     :type geometric_calibration_path: string
-    :param spectral_calibration_path: path to the spectral calibration file.
-    :type spectral_calibration_path: string
+    :param wl_to_px_coeff: polynomial coefficients of the table converting
+                    wavelength (in nm) into pixel position
+    :type wl_to_px_coeff: array
+    :param px_to_wl_coeff: polynomial coefficients of the table converting
+                    pixel position into wavelength (in nm)
+    :type px_to_wl_coeff: array
     :param nb_img: lower and upper bounds of the frames in one datacube,\
                     defaults to (None, None)
-    :type nb_img: tuple, optional
+    :type nb_img: tuple
     :param mode_flux: mode of measurement of the spectral fluxes among\
                     'amplitude', 'model', 'windowed', 'raw'. 'raw' is\
                         preferred. See documentation of\

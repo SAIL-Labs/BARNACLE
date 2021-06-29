@@ -5,7 +5,7 @@ Example on how to use the library ``zeta_coeff_lib.py``.
 It gives the shape of the channels.
 """
 import numpy as np
-from barnacle.calibration.zeta_coeff import *
+from barnacle.calibration.zeta_coeff_lib import *
 
 # Settings
 nb_img = (None, None)
@@ -30,9 +30,9 @@ wl_to_px_coeff = np.load(
 px_to_wl_coeff = np.load(
     spectral_calibration_path+'20200906_px_to_wl.npy')
 
-do_zeta_coeff(data_path, output_path,
-              geometric_calibration_path,
-              wl_to_px_coeff, px_to_wl_coeff, mode_flux,
-              spectral_binning, wl_bin_min, wl_bin_max,
-              bandwidth_binning, nb_img,
-              save, plotting=True)
+zeta_coeff = do_zeta_coeff(data_path, output_path,
+                           geometric_calibration_path,
+                           wl_to_px_coeff, px_to_wl_coeff, mode_flux,
+                           spectral_binning, wl_bin_min, wl_bin_max,
+                           bandwidth_binning, nb_img,
+                           save, plotting=True)

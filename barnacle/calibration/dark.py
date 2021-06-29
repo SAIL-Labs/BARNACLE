@@ -302,7 +302,8 @@ def check_dark(dark_list, avg_dark, channel_pos, sep, spatial_axis, edge_min,
     plt.text(0.05, 0.6, txt, va='center', fontsize=30,
              transform=ax.transAxes,
              bbox=dict(boxstyle="square", facecolor='white'))
-    plt.savefig(output_path+'histogram_dark_fullframe.png')
+    if save:
+        plt.savefig(output_path+'histogram_dark_fullframe.png')
 
     plt.figure(figsize=(19.20, 10.80))
     for i in range(16):
@@ -318,7 +319,8 @@ def check_dark(dark_list, avg_dark, channel_pos, sep, spatial_axis, edge_min,
         plt.legend(loc='upper left')
     #    plt.xticks(size=36);plt.yticks(size=36)
     plt.suptitle('Histogram of the background noise')
-    plt.savefig(output_path+'histogram_dark.png')
+    if save:
+        plt.savefig(output_path+'histogram_dark.png')
 
     plt.figure(figsize=(19.20, 10.80))
     for i in range(16):
@@ -336,7 +338,8 @@ def check_dark(dark_list, avg_dark, channel_pos, sep, spatial_axis, edge_min,
     #    plt.xlim(-1000,1000)
     #    plt.xticks(size=36);plt.yticks(size=36)
     plt.suptitle('Histogram of the background noise')
-    plt.savefig(output_path+'histogram_dark_logscale.png')
+    if save:
+        plt.savefig(output_path+'histogram_dark_logscale.png')
 
     ''' Inspecting non-uniformities '''
     hist_dk56, bin_dk56 = np.histogram(dk56, bins=int(len(dk56)**0.5))
@@ -425,7 +428,8 @@ def check_dark(dark_list, avg_dark, channel_pos, sep, spatial_axis, edge_min,
         if i == 0:
             plt.legend(loc='best')
     plt.tight_layout()
-    plt.savefig(output_path+'avg_time_lapse.png')
+    if save:
+        plt.savefig(output_path+'avg_time_lapse.png')
 
     plt.figure(figsize=(19.20, 10.80))
     plt.plot(np.arange(dk56.size)[::1], dk56[::1])
@@ -473,6 +477,7 @@ def check_dark(dark_list, avg_dark, channel_pos, sep, spatial_axis, edge_min,
         'Average dark current on whole frame'
         '(Drift = %.3E/frame)' % popt[0], size=35)
     plt.legend(loc='best')
-    plt.savefig(output_path+'avg_dark_fullframe.png')
+    if save:
+        plt.savefig(output_path+'avg_dark_fullframe.png')
 
     return params, hist_to_save, np.array([list_hist, bin_hist[:-1]])

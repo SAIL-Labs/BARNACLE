@@ -611,59 +611,101 @@ def prepareConfig():
     #    calib_params_path = file_path#root+'GLINTprocessed/calibration_params/'
     #    zeta_coeff_path = calib_params_path + '20201209_zeta_coeff_raw.hdf5'
 
+    # # =============================================================================
+    # #  data202104/20210429/delSge
+    # # =============================================================================
+    # starname = 'del Sge'
+    # date = '2021-04-29'
+    # ''' Set the bounds of the parameters to fit '''
+    # nulls_to_invert = [
+    #     '']  # If one null and antinull outputs are swapped in the data processing
+    # # If one null and antinull outputs are swapped in the data processing
+    # nulls_to_invert_model = ['']
+    # bounds_mu0 = [(0, 800), (2200, 2500), (2200, 2500), (0, 800), (20000, 26000),
+    #               (12500, 13500)]  # bounds for DeltaPhi mu, one tuple per null
+    # bounds_sig0 = [(50, 300), (200, 300), (200, 300), (1, 250),
+    #                (100, 200), (100, 200)]  # bounds for DeltaPhi sig
+    # bounds_na0 = [(0.0, 0.05), (0., 0.05), (0., 0.01), (0.0, 0.04),
+    #               (0., 0.2), (0., 0.2)]  # bounds for astronull
+    # # differential step to apply to the TRF fitting algorithm, used for computing the finite difference
+    # diffstep = [0.005, 10, 10]
+    # # scale factor of the parameters to fit, see least_squares doc for more details
+    # xscale = np.ones(len(diffstep))
+    # # Boundaries of the histogram, to be set manually after checking the histogram sphape with "skip_fit = True"
+    # bin_bounds0 = [(-1., 2.), (-0.1, 0.4), (-0.1, 0.4),
+    #                (-1, 2.), (-0.1, 1.), (-0.1, 1.)]
+
+    # #bounds_mu0[4] = (8000, 10500)
+    # #bounds_na0[4] = (0, 0.2)
+    # #bounds_sig0[4] = (130, 200)
+
+    # ''' Set the initial conditions '''
+    # mu_opd0 = np.array([300, 2400, 2400, 470, 22000, 12900],
+    #                    dtype=np.float64)  # initial guess of DeltaPhi mu
+    # # initial guess of DeltaPhi sig
+    # sig_opd0 = np.array([200, 260, 260, 50, 130, 160], dtype=np.float64)
+    # na0 = np.array([0.02, 0.001, 0.001, 0.014, 0.025, 0.08],
+    #                dtype=np.float64)  # initial guess of astro null
+
+    # factor_minus0 = [2., 1, 1, 2.5, 4.5, 2]
+    # factor_plus0 = [2., 1, 1, 2.5, 1.5, 1.5]
+
+    # ''' Import real data '''
+    # datafolder = 'data202104/20210429/delSge/'
+    # darkfolder = 'data202104/20210429/delSge/'
+    # root = "//tintagel.physics.usyd.edu.au/snert/"
+    # #root = "C:/Users/marc-antoine/glint/"
+    # #root = "/mnt/96980F95980F72D3/glint/"
+    # file_path = root+'GLINTprocessed/'+datafolder
+    # save_path = file_path+'output/'
+    # data_list = [
+    #     file_path+f for f in os.listdir(file_path) if '.hdf5' in f and 'n1n4' in f]
+    # dark_list = [root+'GLINTprocessed/'+darkfolder+f for f in os.listdir(
+    #     root+'GLINTprocessed/'+darkfolder) if '.hdf5' in f and 'dark' in f]
+    # calib_params_path = file_path  # root+'GLINTprocessed/calibration_params/'
+    # zeta_coeff_path = calib_params_path + '20210503_zeta_coeff_raw.hdf5'
+    
     # =============================================================================
-    #  data202104/20210429/delSge
+    #  data202006/AlfBoo/ mew wl calib
     # =============================================================================
-    starname = 'del Sge'
+    starname = 'Alf Boo'
     date = '2021-04-29'
     ''' Set the bounds of the parameters to fit '''
-    nulls_to_invert = [
-        '']  # If one null and antinull outputs are swapped in the data processing
-    # If one null and antinull outputs are swapped in the data processing
-    nulls_to_invert_model = ['']
-    bounds_mu0 = [(0, 800), (2200, 2500), (2200, 2500), (0, 800), (20000, 26000),
-                  (12500, 13500)]  # bounds for DeltaPhi mu, one tuple per null
-    bounds_sig0 = [(50, 300), (200, 300), (200, 300), (1, 250),
-                   (100, 200), (100, 200)]  # bounds for DeltaPhi sig
-    bounds_na0 = [(0.0, 0.05), (0., 0.05), (0., 0.01), (0.0, 0.04),
-                  (0., 0.2), (0., 0.2)]  # bounds for astronull
-    # differential step to apply to the TRF fitting algorithm, used for computing the finite difference
-    diffstep = [0.005, 10, 10]
-    # scale factor of the parameters to fit, see least_squares doc for more details
-    xscale = np.ones(len(diffstep))
-    # Boundaries of the histogram, to be set manually after checking the histogram sphape with "skip_fit = True"
-    bin_bounds0 = [(-1., 2.), (-0.1, 0.4), (-0.1, 0.4),
-                   (-1, 2.), (-0.1, 1.), (-0.1, 1.)]
-
-    #bounds_mu0[4] = (8000, 10500)
-    #bounds_na0[4] = (0, 0.2)
-    #bounds_sig0[4] = (130, 200)
+    nulls_to_invert = [''] # If one null and antinull outputs are swapped in the data processing
+    nulls_to_invert_model = [''] # If one null and antinull outputs are swapped in the data processing
+    bounds_mu0 = [(0, 1000), (2200, 2500), (2200, 2500), (0, 1000), (9700, 10100), (12500, 13500)] # bounds for DeltaPhi mu, one tuple per null
+    bounds_sig0 = [(100, 300), (200, 300), (200, 300), (10,200), (100, 200), (100, 200)] # bounds for DeltaPhi sig
+    bounds_na0 = [(0.0, 0.1), (0., 0.05), (0., 0.01), (0.0, 0.05), (0., 0.05), (0., 0.1)] # bounds for astronull
+    diffstep = [0.001, 10, 10] # differential step to apply to the TRF fitting algorithm, used for computing the finite difference
+    xscale = np.ones(len(diffstep)) # scale factor of the parameters to fit, see least_squares doc for more details
+    bin_bounds0 = [(-0.1, 1.), (-0.1, 0.4), (-0.1, 0.4), (-0.1, 1.), (-0.1, 1.), (-0.1, 1.)] # Boundaries of the histogram, to be set manually after checking the histogram sphape with "skip_fit = True"
 
     ''' Set the initial conditions '''
-    mu_opd0 = np.array([300, 2400, 2400, 470, 22000, 12900],
-                       dtype=np.float64)  # initial guess of DeltaPhi mu
-    # initial guess of DeltaPhi sig
-    sig_opd0 = np.array([200, 260, 260, 50, 130, 160], dtype=np.float64)
-    na0 = np.array([0.02, 0.001, 0.001, 0.014, 0.025, 0.08],
-                   dtype=np.float64)  # initial guess of astro null
+    mu_opd0 = np.array([300, 2400, 2400, 400, 9800, 12900], dtype=np.float64) # initial guess of DeltaPhi mu
+    sig_opd0 = np.array([200, 260, 260, 110, 130, 160], dtype=np.float64) # initial guess of DeltaPhi sig
+    na0 = np.array([0.08, 0.001, 0.001, 0.011, 0.025, 0.08], dtype=np.float64) # initial guess of astro null
 
-    factor_minus0 = [2., 1, 1, 2.5, 4.5, 2]
-    factor_plus0 = [2., 1, 1, 2.5, 1.5, 1.5]
+    factor_minus0 = [1., 1, 1, 1.5, 4.5, 2.5]
+    factor_plus0 = [1., 1, 1, 1.5, 2.5, 2]
 
     ''' Import real data '''
-    datafolder = 'data202104/20210429/delSge/'
-    darkfolder = 'data202104/20210429/delSge/'
+    datafolder = 'data202104/20210429/alfBoo_1/'
+    darkfolder = 'data202104/20210429/alfBoo_1/'
     root = "//tintagel.physics.usyd.edu.au/snert/"
     #root = "C:/Users/marc-antoine/glint/"
     #root = "/mnt/96980F95980F72D3/glint/"
     file_path = root+'GLINTprocessed/'+datafolder
     save_path = file_path+'output/'
-    data_list = [
-        file_path+f for f in os.listdir(file_path) if '.hdf5' in f and 'n1n4' in f]
-    dark_list = [root+'GLINTprocessed/'+darkfolder+f for f in os.listdir(
-        root+'GLINTprocessed/'+darkfolder) if '.hdf5' in f and 'dark' in f]
-    calib_params_path = file_path  # root+'GLINTprocessed/calibration_params/'
+    data_list = [file_path+f for f in os.listdir(file_path) if '.hdf5' in f and 'n1n4' in f]
+    dark_list = [root+'GLINTprocessed/'+darkfolder+f for f in os.listdir(root+'GLINTprocessed/'+darkfolder) if '.hdf5' in f and 'dark' in f]
+    calib_params_path = file_path#root+'GLINTprocessed/calibration_params/'
     zeta_coeff_path = calib_params_path + '20210503_zeta_coeff_raw.hdf5'
+    #
+    ## With fitted amplitude instead of raw
+    #factor_minus0 = [1., 1, 1, 1.5, 4.5, 2.5]
+    #factor_plus0 = [1., 1, 1, 1.5, 2.5, 2]
+    #zeta_coeff_path = calib_params_path + '20200604_zeta_coeff_fit.hdf5'
+    
     # =============================================================================
     # Set the configuration into a dictionay
     # =============================================================================

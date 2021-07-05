@@ -741,12 +741,9 @@ def run_nsc(activates, skip_fit, chi2_map_switch, maps_sz, nbs, which_nulls,
 
     # Fool-proof
     if not chi2_map_switch and not skip_fit:
-        check_mu = gff.check_init_guess(mu_opd0, np.array(bounds_mu0)[:, 0],
-                                        np.array(bounds_mu0)[:, 1])
-        check_sig = gff.check_init_guess(sig_opd0, np.array(bounds_sig0)[:, 0],
-                                         np.array(bounds_sig0)[:, 1])
-        check_null = gff.check_init_guess(na0, np.array(bounds_na0)[:, 0],
-                                          np.array(bounds_na0)[:, 1])
+        check_mu = gff.check_init_guess(mu_opd0, bounds_mu0, bounds_mu0)
+        check_sig = gff.check_init_guess(sig_opd0, bounds_sig0, bounds_sig0)
+        check_null = gff.check_init_guess(na0, bounds_na0, bounds_na0)
 
         if check_mu or check_sig or check_null:
             raise Exception('Check boundaries: the initial guesses' +

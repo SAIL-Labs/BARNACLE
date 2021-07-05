@@ -7,42 +7,42 @@ Created on Thu May 13 12:13:55 2021
 """
 from barnacle.science.glint_reduction import *
 
+''' Inputs '''
+datafolder = 'data202104/20210429/alfBoo_1/'
+#    root = "C:/Users/marc-antoine/glint/"
+root = "/mnt/96980F95980F72D3/"
+# root = "//tintagel.physics.usyd.edu.au/snert/"
+output_path = root+'GLINTprocessed/'+datafolder
+spectral_calibration_path = output_path
+geometric_calibration_path = output_path
+# data_path = '//tintagel.physics.usyd.edu.au/snert/GLINTData/'+datafolder
+# data_path = 'C:/Users/marc-antoine/glint//GLINTData/'+datafolder
+data_path = '/mnt/96980F95980F72D3/glintData/'+datafolder
 
 ''' Settings '''
 nb_img = (0, None)
 debug = False
 save = True
-nb_files = (2000, None)
+nb_files = (0, 1)
 bin_frames = False
 nb_frames_to_bin = 50
-spectral_binning = True
+spectral_binning = False
 wl_bin_min, wl_bin_max = 1525, 1575  # In nm
 bandwidth_binning = 50  # In nm
-mode_flux = 'raw'
+mode_flux = 'fit'
 activate_estimate_spectrum = False
 nb_files_spectrum = (5000, 10000)
 wavelength_bounds = (1400, 1700)
-suffix = 'n5n6'
+suffix = 'n1n4'
 #    ron = 0
 plot_name = datafolder.split('/')[-2]
 
-''' Inputs '''
-datafolder = 'data202006/AlfBoo/'
-#    root = "C:/Users/marc-antoine/glint/"
-# root = "/mnt/96980F95980F72D3/glint/"
-root = "//tintagel.physics.usyd.edu.au/snert/"
-output_path = root+'GLINTprocessed/'+datafolder
-spectral_calibration_path = output_path
-geometric_calibration_path = output_path
-data_path = '//tintagel.physics.usyd.edu.au/snert/GLINTData/'+datafolder
-# data_path = 'C:/Users/marc-antoine/glint//GLINTData/'+datafolder
-# data_path = '/mnt/96980F95980F72D3/glint_data/'+datafolder
 
 wl_bin_bounds = (wl_bin_min, wl_bin_max)
 spectral_calibration_files = (spectral_calibration_path +
                               '20210429_wl_to_px.npy',
                               spectral_calibration_path +
-                              '20210429_px_to_wl_coeff.npy')
+                              '20210429_px_to_wl.npy')
 monitor_amplitude, monitor_null, monitor_photo, wl_scale = \
     reduce_data(data_path, plot_name, output_path, suffix, nb_files, nb_img,
                 nb_frames_to_bin,

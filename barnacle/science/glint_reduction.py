@@ -214,8 +214,12 @@ def reduce_data(data_path, plot_name, output_path, suffix, nb_files, nb_img,
                      activate_estimate_spectrum, wl_bin_bounds, save,
                      bin_frames, debug, spectral_binning, bandwidth_binning)
 
-    plots(monitor_amplitude, monitor_null, monitor_photo, wl_scale,
-          output_path, suffix, plot_name, save, debug)
+    try:
+        plots(monitor_amplitude, monitor_null, monitor_photo, wl_scale,
+              output_path, suffix, plot_name, save, debug)
+    except TypeError as e:
+        print(e)
+        pass
 
     return monitor_amplitude, monitor_null, monitor_photo, wl_scale
 

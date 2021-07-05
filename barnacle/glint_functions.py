@@ -176,9 +176,6 @@ def getSpectralFluxDebug(nbimg, which_tracks, slices_axes, slices,
 #                    if abs(popt2[0]) > 1.e+4:
 #                        debug.append([1, k, i, j])
                 if j == 59 and k == 0:
-                    # print(k, i, j)
-                    # print('Weight on std', (np.sum((simple_gaus/simple_gaus.sum())**2))**0.5)
-                    # print(slices[k,j,i][:7].std())
                     plt.figure()
                     plt.subplot(211)
                     plt.plot(slices_axes[i],

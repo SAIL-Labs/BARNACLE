@@ -55,7 +55,7 @@ from barnacle.glint_functions import get_channel_positions
 NB_TRACKS = 16  # Number of tracks
 
 
-def do_zeta_coeff(data_path, output_path,
+def do_zeta_coeff(data_path, dark_path, output_path,
                   geometric_calibration_path,
                   wl_to_px_coeff, px_to_wl_coeff, mode_flux,
                   spectral_binning=False, wl_bin_min=1525, wl_bin_max=1575,
@@ -72,6 +72,8 @@ def do_zeta_coeff(data_path, output_path,
 
     :param data_path: path to the data folder
     :type data_path: string
+    :param dark_path: path where the averaged dark files are.
+    :type dark_path: string    
     :param output_path: path where to save or load the intermediate products.
     :type output_path: string
     :param geometric_calibration_path: path to the geometric calibration file.
@@ -110,7 +112,8 @@ def do_zeta_coeff(data_path, output_path,
 
     """
     zeta_coeff, img2, Imp, photometries = \
-        get_zeta_coeff(data_path, output_path, geometric_calibration_path,
+        get_zeta_coeff(data_path, dark_path, output_path,
+                       geometric_calibration_path,
                        wl_to_px_coeff, px_to_wl_coeff, nb_img, mode_flux,
                        spectral_binning, wl_bin_min, wl_bin_max,
                        bandwidth_binning, save)
@@ -294,7 +297,7 @@ def _plot_flux(img2, output_path, beam, save):
         plt.savefig(output_path+'fluxes_p%s' % (beam)+'.png')
 
 
-def get_zeta_coeff(data_path, output_path, geometric_calibration_path,
+def get_zeta_coeff(data_path, dark_path, output_path, geometric_calibration_path,
                    wl_to_px_coeff, px_to_wl_coeff, nb_img, mode_flux,
                    spectral_binning, wl_bin_min, wl_bin_max,
                    bandwidth_binning, save):
@@ -304,6 +307,8 @@ def get_zeta_coeff(data_path, output_path, geometric_calibration_path,
 
     :param data_path: path to the data folder
     :type data_path: string
+    :param dark_path: path where the averaged dark files are.
+    :type dark_path: string
     :param output_path: path where to save or load the intermediate products.
     :type output_path: string
     :param geometric_calibration_path: path to the geometric calibration file.
@@ -356,8 +361,8 @@ def get_zeta_coeff(data_path, output_path, geometric_calibration_path,
         os.makedirs(output_path)
 
     # Load calibration data
-    dark = np.load(output_path+'superdark.npy')
-    dark_per_channel = np.load(output_path+'superdarkchannel.npy')
+    dark = np.load(dark_path+'superdark.npy')
+    dark_per_channel = np.load(dark_path+'superdarkchannel.npy')
 
     for beam in range(1, 5):
         data_list = [data_path +

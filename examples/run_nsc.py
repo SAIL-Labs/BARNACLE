@@ -25,7 +25,7 @@ activate_random_init_guesses = True
 # Deconvolve photometries after assuming they follow a Normal distribution.
 activate_photo_resampling = False
 # Calculate the null depth in the old-fashioned way (cf Hanot et al. (2011))
-activate_save_basic_esti = False
+activate_save_basic_esti = True
 #
 activate_spectral_sorting = False
 activate_spectral_binning = False
@@ -40,7 +40,7 @@ skip_fit = False
 chi2_map_switch = False
 # Map the parameters space over astronull, DeltaPhi mu and sigma
 map_na_sz = 20
-map_mu_sz = 100
+map_mu_sz = 50
 map_sig_sz = 10
 # Binning the frames before any calculation
 global_binning = 1
@@ -51,13 +51,13 @@ n_samp_per_loop = int(1e+7)
 # Number of frames to bin before doing the sorting
 nb_frames_sorting_binning = 100
 # Number of frames to bin to go toward a dark-free histogram of injection
-nb_frames_binning_photometry = 100
+nb_frames_binning_photometry = -1
 # Which data files to load
-nb_files_data = (0, None)
+nb_files_data = (5, None)
 # Which dark files to load
 nb_files_dark = (0, None)
 # lower and upper bound of the iteration loop for basin hopping method
-basin_hopping_nloop = (0, 10)
+basin_hopping_nloop = (20, 30)
 # Baselines to process
 which_nulls = ['null1', 'null4'][:2]
 
@@ -84,5 +84,5 @@ nbs = (global_binning, n_samp_total, n_samp_per_loop,
 wl_minmax = (wl_min, wl_max)
 
 
-run_nsc(activates, skip_fit, chi2_map_switch, maps_sz, nbs, which_nulls,
-        wl_minmax)
+out = run_nsc(activates, skip_fit, chi2_map_switch, maps_sz, nbs, which_nulls,
+              wl_minmax)

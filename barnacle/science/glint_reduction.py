@@ -133,12 +133,11 @@ from barnacle.tests.check_tools import check_datalist_not_empty, \
 NB_TRACKS = 16  # Number of tracks
 
 
-def reduce_data(data_path, plot_name, output_path, suffix, nb_files, nb_img,
-                nb_frames_to_bin,
-                geometric_calibration_path, spectral_calibration_files,
+def reduce_data(data_path, plot_name, dark_path, output_path, suffix, nb_files,
+                nb_img, nb_frames_to_bin, geometric_calibration_path,
+                spectral_calibration_files,
                 save, bin_frames, debug, spectral_binning, wl_bin_bounds,
-                bandwidth_binning,
-                activate_estimate_spectrum,
+                bandwidth_binning, activate_estimate_spectrum,
                 nb_files_spectrum, mode_flux, wavelength_bounds):
     """
     Wrapper to reduce the data.
@@ -147,6 +146,8 @@ def reduce_data(data_path, plot_name, output_path, suffix, nb_files, nb_img,
     :type data_path: string
     :param plot_name: name used to save figures
     :type plot_name: string
+    :param dark_path: path where the averaged dark files are.
+    :type dark_path: string
     :param output_path: path where to save or load the intermediate products
     :type output_path: string
     :param suffix: ID-like of the data to process
@@ -203,12 +204,12 @@ def reduce_data(data_path, plot_name, output_path, suffix, nb_files, nb_img,
     check_mode_flux_exists(mode_flux)
 
     if activate_estimate_spectrum:
-        get_spectrum(data_list, output_path,
+        get_spectrum(data_list, dark_path, output_path,
                      geometric_calibration_path, spectral_calibration_files,
                      nb_files_spectrum, nb_img, mode_flux, wavelength_bounds)
 
     monitor_amplitude, monitor_null, monitor_photo, wl_scale = \
-        extract_data(data_list, nb_files, nb_img, nb_frames_to_bin,
+        extract_data(data_list, nb_files, nb_img, nb_frames_to_bin, dark_path,
                      output_path, geometric_calibration_path,
                      spectral_calibration_files, mode_flux, wavelength_bounds,
                      activate_estimate_spectrum, wl_bin_bounds, save,
@@ -224,7 +225,7 @@ def reduce_data(data_path, plot_name, output_path, suffix, nb_files, nb_img,
     return monitor_amplitude, monitor_null, monitor_photo, wl_scale
 
 
-def get_spectrum(data_list, output_path,
+def get_spectrum(data_list, dark_path, output_path,
                  geometric_calibration_path, spectral_calibration_files,
                  nb_files_spectrum, nb_img, mode_flux, wavelength_bounds
                  ):
@@ -233,6 +234,8 @@ def get_spectrum(data_list, output_path,
 
     :param data_list: contains path to the data to load
     :type data_list: list
+    :param dark_path: path where the averaged dark files are.
+    :type dark_path: string
     :param output_path: path where to save or load the intermediate products
     :type output_path: string
     :param geometric_calibration_path: path to the geometrical calibration file
@@ -255,7 +258,7 @@ def get_spectrum(data_list, output_path,
     """
     # Get the spectrum of photometric channels
     nb_frames = 0
-    dark, dark_per_channel = _load_dark(output_path)
+    dark, dark_per_channel = _load_dark(dark_path)
     slices_spectrum = np.zeros_like(dark_per_channel)
     channel_pos, sep = get_channel_positions(NB_TRACKS)
     spatial_axis = np.arange(dark.shape[0])
@@ -273,7 +276,7 @@ def get_spectrum(data_list, output_path,
                  len(data_list[nb_files_spectrum[0]:nb_files_spectrum[1]]))
               )
         img_spectrum = _measure_flux(
-            f, nb_img, 0, output_path,
+            f, nb_img, 0, dark_path, output_path,
             geometric_calibration_path, spectral_calibration_files,
             mode_flux, wavelength_bounds, False, False)
 
@@ -308,7 +311,8 @@ def get_spectrum(data_list, output_path,
     np.save(output_path+'spectra', spectra)
 
 
-def extract_data(data_list, nb_files, nb_img, nb_frames_to_bin, output_path,
+def extract_data(data_list, nb_files, nb_img, nb_frames_to_bin, dark_path,
+                 output_path,
                  geometric_calibration_path, spectral_calibration_files,
                  mode_flux, wavelength_bounds,
                  activate_estimate_spectrum, wl_bin_bounds,
@@ -327,6 +331,8 @@ def extract_data(data_list, nb_files, nb_img, nb_frames_to_bin, output_path,
             than the number of frames inside a datacube, the whole datacube is\
             binned
     :type nb_frames_to_bin: int
+    :param dark_path: path where the averaged dark files are.
+    :type dark_path: string
     :param output_path: path where to save or load the intermediate products
     :type output_path: string
     :param geometric_calibration_path: path to the geometrical calibration file
@@ -380,7 +386,7 @@ def extract_data(data_list, nb_files, nb_img, nb_frames_to_bin, output_path,
     p3 = []
     p4 = []
 
-    dark, dark_per_channel = _load_dark(output_path)
+    dark, dark_per_channel = _load_dark(dark_path)
     channel_pos, sep = get_channel_positions(NB_TRACKS)
     position_outputs, width_outputs = \
         _load_geometric_calibration(geometric_calibration_path)
@@ -399,7 +405,7 @@ def extract_data(data_list, nb_files, nb_img, nb_frames_to_bin, output_path,
               (f, data_list.index(f)+1,
                len(data_list[nb_files[0]:nb_files[1]])))
         img = _measure_flux(
-            f, nb_img, nb_frames_to_bin, output_path,
+            f, nb_img, nb_frames_to_bin, dark_path, output_path,
             geometric_calibration_path, spectral_calibration_files,
             mode_flux, wavelength_bounds, bin_frames, debug)
 
@@ -625,7 +631,7 @@ def plots(monitor_amplitude, monitor_null, monitor_photo, wl_scale,
         plt.grid()
 
 
-def _load_dark(output_path):
+def _load_dark(dark_path):
     """
     Load the dark files.
 
@@ -635,8 +641,8 @@ def _load_dark(output_path):
     :rtype: 2-tuple of arrays
 
     """
-    dark = np.load(output_path+'superdark.npy')
-    dark_per_channel = np.load(output_path+'superdarkchannel.npy')
+    dark = np.load(dark_path+'superdark.npy')
+    dark_per_channel = np.load(dark_path+'superdarkchannel.npy')
     return dark, dark_per_channel
 
 
@@ -678,7 +684,7 @@ def _load_spectral_calibration(spectral_calibration_path_wl_px,
     return wl_to_px_coeff, px_to_wl_coeff
 
 
-def _measure_flux(datacube, nb_img, nb_frames_to_bin, output_path,
+def _measure_flux(datacube, nb_img, nb_frames_to_bin, dark_path, output_path,
                   geometric_calibration_path, spectral_calibration_files,
                   mode_flux, wavelength_bounds, bin_frames, debug):
     """
@@ -693,6 +699,8 @@ def _measure_flux(datacube, nb_img, nb_frames_to_bin, output_path,
             than the number of frames inside a datacube, the whole datacube is\
             binned
     :type nb_frames_to_bin: int
+    :param dark_path: path where the averaged dark files are.
+    :type dark_path: string
     :param output_path: path where to save or load the intermediate products
     :type output_path: string
     :param geometric_calibration_path: path to the geometrical calibration file
@@ -713,7 +721,7 @@ def _measure_flux(datacube, nb_img, nb_frames_to_bin, output_path,
     :rtype: class-object
 
     """
-    dark, dark_per_channel = _load_dark(output_path)
+    dark, dark_per_channel = _load_dark(dark_path)
     channel_pos, sep = get_channel_positions(NB_TRACKS)
     spatial_axis = np.arange(dark.shape[0])
     spectral_axis = np.arange(dark.shape[1])

@@ -1363,7 +1363,8 @@ def binning(arr, binning, axis=0, avg=False):
     return arr, cropped_idx
 
 
-def sortFrames(dic_data, binned_frames, quantile, factor_minus, factor_plus, which_null, plot=False, save_path=''):
+def sortFrames(dic_data, nb_frames_to_bin, quantile, factor_minus, factor_plus,
+               which_null, starname, plot=False, save_path=''):
     """Perform sigmal-clipping to remove frames non-normally distributed\
         phase fluctuations.
 
@@ -1384,10 +1385,10 @@ def sortFrames(dic_data, binned_frames, quantile, factor_minus, factor_plus, whi
 
     :param dic_data: Contains the extracted data from files by the function ``load_data``.
     :type dic_data: dict
-    :param binned_frames: Number of frames to bin before applying the filter.
+    :param nb_frames_to_bin: Number of frames to bin before applying the filter.
         It is used to increase the SNR and exhibit the phase noise over
         the detector noise.
-    :type binned_frames: int
+    :type nb_frames_to_bin: int
     :param quantile: Dirst quantile taken to determine the `base` threshold.
     :type quantile: loat between 0 and 1
     :param factor_minus: Factor applied to the std of the null flux to\
@@ -1398,6 +1399,8 @@ def sortFrames(dic_data, binned_frames, quantile, factor_minus, factor_plus, whi
     :type factor_plus: float
     :param which_null: Indicates on which baseline the filter is applied.
     :type which_null: string
+    :param starname: Name of the star
+    :type starname: string
     :param plot: If ``True``, it displays the time serie of the binned frames,
         the thresholds and highlights the filtered frames.
         The default is False., defaults to False
@@ -1414,8 +1417,8 @@ def sortFrames(dic_data, binned_frames, quantile, factor_minus, factor_plus, whi
     nb_frames_total = dic_data['Iminus'].shape[1]
     Iminus = dic_data['Iminus'].mean(axis=0)
     Iplus = dic_data['Iplus'].mean(axis=0)
-    Iminus, cropped_idx_minus = binning(Iminus, binned_frames, avg=True)
-    Iplus, cropped_idx_plus = binning(Iplus, binned_frames, avg=True)
+    Iminus, cropped_idx_minus = binning(Iminus, nb_frames_to_bin, avg=True)
+    Iplus, cropped_idx_plus = binning(Iplus, nb_frames_to_bin, avg=True)
     std_plus = Iplus.std()
     std_minus = Iminus.std()
 #    std_plus = std_minus = max(std_plus, std_minus)
@@ -1446,14 +1449,14 @@ def sortFrames(dic_data, binned_frames, quantile, factor_minus, factor_plus, whi
         plt.plot(x, Iplus, '.', label='I+')
         plt.plot(x, Iplus_quantile_med*np.ones_like(Iplus), 'r--', lw=3)
         plt.plot(x, (Iplus_quantile_med-factor_plus*std_plus)
-                 * np.ones_like(Iplus), c='r', lw=3)
+                  * np.ones_like(Iplus), c='r', lw=3)
         plt.plot(x, Iminus_quantile_med*np.ones_like(Iminus), 'g--', lw=3)
         plt.plot(x, (Iminus_quantile_med+factor_minus*std_minus)
-                 * np.ones_like(Iminus), c='g', lw=3)
+                  * np.ones_like(Iminus), c='g', lw=3)
         plt.plot(x[idx_good_values], Iminus[idx_good_values],
-                 '+', label='Selected I-')
+                  '+', label='Selected I-')
         plt.plot(x[idx_good_values], Iplus[idx_good_values],
-                 'x', label='Selected I+')
+                  'x', label='Selected I+')
         plt.grid()
         plt.legend(loc='best', fontsize=25)
         plt.xticks(size=25)
@@ -1461,11 +1464,12 @@ def sortFrames(dic_data, binned_frames, quantile, factor_minus, factor_plus, whi
         plt.ylabel('Intensity (count)', size=30)
         plt.xlabel('Frames', size=30)
         plt.tight_layout()
-        string = which_null + \
+        string = starname + '_' + which_null + '_bin' +\
+            str(nb_frames_to_bin) +\
             '_frame_selection_monitor_%s_%s' % (factor_minus, factor_plus)
-        plt.savefig(save_path+string+'.png', dpi=300)
+        plt.savefig(save_path+string+'.png', dpi=150)
 
-    return new_dic, idx_good_frames
+    return new_dic, idx_good_frames, (Iminus, Iplus)
 
 
 def check_init_guess(guess, l_bound, u_bound):
@@ -1545,7 +1549,7 @@ def update_label(old_label, exponent_text):
 
 
 def plot_photometries_histo(data_I, dk_photo, wl_scale, wl_idx0, nb_rows_plot,
-                            count, null_table, save_path,
+                            count, photo_id, save_path,
                             activate_spectral_binning, key,
                             basin_hopping_count, wl_min, wl_max, datafolder):
     """Plot the histogram of the photometries per spectral channel
@@ -1562,8 +1566,8 @@ def plot_photometries_histo(data_I, dk_photo, wl_scale, wl_idx0, nb_rows_plot,
     :type nb_rows_plot: int
     :param count: counting gadget
     :type count: int
-    :param null_table: table matching null ID and corresponding outputs
-    :type null_table: dict
+    :param photo_id: ID of the photometric tap
+    :type photo_id: int or str
     :param save_path: path where to save the plot
     :type save_path: str
 
@@ -1585,7 +1589,7 @@ def plot_photometries_histo(data_I, dk_photo, wl_scale, wl_idx0, nb_rows_plot,
             plt.title('%.0f nm' % wl_scale[wl], size=20)
             plt.plot(histo_I[1][:-1], histo_I[0], '.',
                      markersize=5,
-                     label='P%s' % (null_table[key][1][0]+1))
+                     label='P%s' % (photo_id))
             plt.plot(histo_dI[1][:-1], histo_dI[0],
                      '.', markersize=5, label='Dark')
             plt.grid()
@@ -1599,7 +1603,7 @@ def plot_photometries_histo(data_I, dk_photo, wl_scale, wl_idx0, nb_rows_plot,
             count += 1
         plt.tight_layout()
         string = key + '_' + '%03d' % (basin_hopping_count) +\
-            '_P%s' % (null_table[key][1][0]+1) + '_' +\
+            '_P%s' % (photo_id) + '_' +\
             str(wl_min) + '-' + str(wl_max) + '_' +\
             os.path.basename(datafolder[:-1]) +\
             '_%.0f' % (wl_scale[wl_idx[-1]])
@@ -1657,13 +1661,13 @@ def plot_chi2map(chi2map, mapx, mapy, mapz, argminz, stepx, stepy,
         iteration = np.arange(mapz.size)
     for i, it in zip(iteration, range(10)):
         plt.subplot(5, 2, it+1)
-        plt.imshow(np.log10(chi2map[i].T),
+        plt.imshow(np.log10(chi2map[i]),
                    interpolation='none', origin='lower', aspect='auto',
                    extent=[mapx[0]-stepx/2,
                            mapx[-1]+stepx/2,
                            mapy[0]-stepy/2,
-                           mapy[-1]+stepy/2],
-                   vmin=np.log10(valmin), vmax=np.log10(valmax))
+                           mapy[-1]+stepy/2])#,
+                   # vmin=np.log10(valmin), vmax=np.log10(valmax))
         plt.colorbar()
         plt.xlabel(labelx)
         plt.ylabel(labely)

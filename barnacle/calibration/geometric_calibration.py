@@ -55,13 +55,15 @@ LABELS = ['P4', 'N3', 'P3', 'N2', 'AN4', 'N5', 'N4', 'AN5',
 NB_TRACKS = 16
 
 
-def do_geometric_calibration(data_list, output_path, px_to_wl_coeff,
+def do_geometric_calibration(data_list, dark_path, output_path, px_to_wl_coeff,
                              save, plotting):
     """
     Wrapper to get and save the geometric calibration for each channel at once.
 
     :param data_list: list of files of no-fringe data.
     :type data_list: list
+    :param dark_path: path where the averaged dark files are.
+    :type dark_path: string
     :param output_path: path where to save or load the intermediate products.
     :type output_path: string
     :param save: if ``True``, save the outputs of the function.
@@ -79,8 +81,8 @@ def do_geometric_calibration(data_list, output_path, px_to_wl_coeff,
         raise IndexError('Data list is empty')
 
     ''' Remove dark from the frames and average them to increase SNR '''
-    dark = np.load(output_path+'superdark.npy')
-    dark_per_channel = np.load(output_path+'superdarkchannel.npy')
+    dark = np.load(dark_path+'superdark.npy')
+    dark_per_channel = np.load(dark_path+'superdarkchannel.npy')
 
     ''' Define bounds of each track '''
     channel_pos, sep = get_channel_positions(NB_TRACKS)

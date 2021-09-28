@@ -205,6 +205,7 @@ def nsc_function(bins0, na, mu_opd, sig_opd, *args):
     # Test and diagnostic
     global Iplus, liste_rv_interfminus, liste_rv_interfplus
     global liste_rv_dark_Iminus, liste_rv_dark_Iplus
+    global liste_rv_IA, liste_rv_IB, rv_injectionA, rv_injectionB
     global injection_mean, injection_corrected_std
 
     if not activate_use_antinull and len(args) == 0:
@@ -236,6 +237,11 @@ def nsc_function(bins0, na, mu_opd, sig_opd, *args):
             (wl_scale0.size, n_samp_per_loop), dtype=cp.float32)
         liste_rv_dark_Iplus = cp.zeros(
             (wl_scale0.size, n_samp_per_loop), dtype=cp.float32)
+        liste_rv_IA = cp.zeros(
+            (wl_scale0.size, n_samp_per_loop), dtype=cp.float32)
+        liste_rv_IB = cp.zeros(
+            (wl_scale0.size, n_samp_per_loop), dtype=cp.float32)
+
 
         rv_opd = cp.random.normal(mu_opd, sig_opd, n_samp_per_loop)
         rv_opd = rv_opd.astype(cp.float32)
@@ -254,7 +260,6 @@ def nsc_function(bins0, na, mu_opd, sig_opd, *args):
                 data_IB_axis, cdf_data_IB, n_samp_per_loop)
 
         for k in range(wl_scale0.size):  # Iterate over the wavelength axis
-            #            bin_width = cp.mean(cp.diff(bins), dtype=cp.float32)
             # random values for dark noise
             rv_dark_Iminus = gff.rv_generator(
                 dark_Iminus_axis[k], dark_Iminus_cdf[k], n_samp_per_loop)
@@ -320,13 +325,6 @@ def nsc_function(bins0, na, mu_opd, sig_opd, *args):
                     pdf_null = cp.histogram(rv_null, bins)[0]
                     accum[k] += pdf_null / cp.sum(pdf_null)
 
-                '''
-                Save some debug stuff
-                '''
-                liste_rv_interfminus[k] = rv_interfminus
-                liste_rv_interfplus[k] = rv_interfplus
-                liste_rv_dark_Iminus[k] = rv_dark_Iminus
-                liste_rv_dark_Iplus[k] = rv_dark_Iplus
             else:
                 rv_interfminus, rv_interfplus =\
                     gff.computeNullDepthNoAntinull(rv_IA, rv_IB, wl_scale0[k],
@@ -339,14 +337,6 @@ def nsc_function(bins0, na, mu_opd, sig_opd, *args):
                                                    spec_chan_width,
                                                    activate_oversampling,
                                                    switch_invert_null)
-
-                '''
-                Save some debug stuff
-                '''
-                liste_rv_interfminus[k] = rv_interfminus
-                liste_rv_interfplus[k] = rv_interfplus
-                liste_rv_dark_Iminus[k] = rv_dark_Iminus
-                liste_rv_dark_Iplus[k] = rv_dark_Iplus
 
                 if activate_spectral_binning:
                     interfminus_binned += rv_interfminus
@@ -365,6 +355,16 @@ def nsc_function(bins0, na, mu_opd, sig_opd, *args):
                     bins = cp.asarray(bins0[k], dtype=cp.float32)
                     pdf_null = cp.histogram(rv_null, bins)[0]
                     accum[k] += pdf_null / cp.sum(pdf_null)
+
+            '''
+            Save some debug stuff
+            '''
+            liste_rv_interfminus[k] = rv_interfminus
+            liste_rv_interfplus[k] = rv_interfplus
+            liste_rv_dark_Iminus[k] = rv_dark_Iminus
+            liste_rv_dark_Iplus[k] = rv_dark_Iplus
+            liste_rv_IA[k] = rv_IA
+            liste_rv_IB[k] = rv_IB
 
         '''
         Inverting the fake sequences if the nll and antinull outputs are
@@ -559,6 +559,7 @@ def run_nsc(activates, skip_fit, chi2_map_switch, maps_sz, nbs, which_nulls,
 
     # Test and diagnostic
     global Iplus, liste_rv_interfminus, liste_rv_interfplus
+    global liste_rv_IA, liste_rv_IB, rv_injectionA, rv_injectionB
     global liste_rv_dark_Iminus, liste_rv_dark_Iplus
     global injection_mean, injection_corrected_std
     
@@ -578,7 +579,7 @@ def run_nsc(activates, skip_fit, chi2_map_switch, maps_sz, nbs, which_nulls,
         activate_save_classic_esti, activate_spectral_sorting,\
         activate_spectral_binning, activate_time_binning_photometry,\
         activate_use_antinull, activate_use_photometry,\
-        activate_zeta = activates
+        activate_zeta, activate_remove_dark, activate_draw_model = activates
 
     map_na_sz, map_mu_sz, map_sig_sz = maps_sz
     global_binning, n_samp_total, n_samp_per_loop, nb_frames_sorting_binning,\
@@ -729,7 +730,7 @@ def run_nsc(activates, skip_fit, chi2_map_switch, maps_sz, nbs, which_nulls,
                              nulls_to_invert, dark,
                              frame_binning=global_binning)
         stop_loading = time()
-
+        
         if activate_phase_sorting or activate_preview_only:
             data, idx_good_frames, i_pm = gff.sortFrames(
                 data, nb_frames_sorting_binning, 0.1, factor_minus0[idx_null],
@@ -762,16 +763,6 @@ def run_nsc(activates, skip_fit, chi2_map_switch, maps_sz, nbs, which_nulls,
                 if zkey != 'wl_scale':
                     zeta_coeff[zkey][:] = 1.
 
-        '''
-        Get histograms of intensities and dark current in the pair of
-        photomoetry outputs.
-
-        Set photometries in dedicated variable into specific variables for
-        clarity.
-        A and B are the generic id of the beams for the processed baseline.
-        '''
-        data_IA, data_IB = data['photo'][0], data['photo'][1]
-        dark_IA, dark_IB = dark['photo'][0], dark['photo'][1]
 
         '''
         Set zeta coeff linking null/antinull and photometric outputs into
@@ -783,20 +774,43 @@ def run_nsc(activates, skip_fit, chi2_map_switch, maps_sz, nbs, which_nulls,
         zeta_plus_B = zeta_coeff['b%s%s' % (idx_photo[1]+1, key_antinull)]
 
         # =====================================================================
-        # Get CDF of dark
+        # Import dark data and get CDF of dark in interferometric outputs
         # =====================================================================
+        '''
+        Get histograms of dark current in the pair of
+        photomoetry outputs.
+        '''
+        dark_IA, dark_IB = dark['photo'][0], dark['photo'][1]
+
         '''
         Get CDF of dark currents in interferometric outputs for generating
         random values in the MC function.
         '''
+        if activate_remove_dark:
+            dark_Iminus = np.zeros_like(dark['Iminus'])
+            dark_Iplus = np.zeros_like(dark['Iplus'])
+        else:
+            dark_Iminus = dark['Iminus']
+            dark_Iplus = dark['Iplus']
+            
         dark_Iminus_axis, dark_Iminus_cdf = gff.get_dark_cdf(
-            dark['Iminus'], wl_scale0)
+            dark_Iminus, wl_scale0)
         dark_Iplus_axis, dark_Iplus_cdf = gff.get_dark_cdf(
-            dark['Iplus'], wl_scale0)
+            dark_Iplus, wl_scale0)
 
         # =====================================================================
         # Get the values of injection and spectrum
         # =====================================================================
+        '''
+        Get histograms of intensities in the pair of
+        photomoetry outputs.
+
+        Set photometries in dedicated variable into specific variables for
+        clarity.
+        A and B are the generic id of the beams for the processed baseline.
+        '''
+        data_IA, data_IB = data['photo'][0], data['photo'][1]
+
         '''
         Either get the CDF for rv generation or just keep the
         measurements if **activate_use_photometry** is ``True``.
@@ -812,6 +826,11 @@ def run_nsc(activates, skip_fit, chi2_map_switch, maps_sz, nbs, which_nulls,
         if activate_use_photometry:
             n_samp_per_loop = data_IA.shape[1]
             nloop = max((n_samp_total // n_samp_per_loop, 1))
+            
+        if activate_remove_dark:
+            injection_dark[:] = 0.
+            
+            
 
         # =====================================================================
         # Compute the null
@@ -826,7 +845,7 @@ def run_nsc(activates, skip_fit, chi2_map_switch, maps_sz, nbs, which_nulls,
             Iminus = data['Iminus']
             Iplus = data['Iplus']
             wl_scale = wl_scale0
-
+            
         if activate_use_antinull:
             if key in nulls_to_invert:
                 data_null = Iplus / Iminus
@@ -878,7 +897,17 @@ def run_nsc(activates, skip_fit, chi2_map_switch, maps_sz, nbs, which_nulls,
         # Basic estimation for classic calibration
         # =====================================================================
         if activate_save_classic_esti:
-            sys.stdout = Logger(save_path+'%s_classic_estimation.log' % (key))
+            classic_save = save_path + os.path.basename(datafolder[:-1]) + '_' +\
+                key + '_' + '%03d' %(basin_hopping_nloop[0]) + '_classic_esti' +\
+                    '_'+str(wl_min) +\
+                '-' + str(wl_max) + '_files_' + str(nb_files_data[0]) +\
+                '_' + str(nb_files_data[1])
+
+            if activate_spectral_binning:
+                classic_save = classic_save+'_sp'
+                
+            sys.stdout = Logger(classic_save + '_log.log')
+            
             print('---------------------')
             print('Classic estimation of ' + key)
             print('%s-%02d-%02d %02dh%02d' % (datetime.now().year,
@@ -897,6 +926,15 @@ def run_nsc(activates, skip_fit, chi2_map_switch, maps_sz, nbs, which_nulls,
             print('factor_minus, factor_plus',
                   factor_minus0[idx_null], factor_plus0[idx_null])
             print('nb_frames_sorting_binning', nb_frames_sorting_binning)
+            # plop = -np.inf
+            # data_null = np.squeeze(data_null)
+            # Iminus = np.squeeze(Iminus)
+            # Iplus = np.squeeze(Iplus)
+            # print(data_null[data_null>=plop].mean(), data_null[data_null>=plop].min(), data_null[data_null>=plop].max())
+            # print(Iminus[data_null>=plop].mean(), Iminus[data_null>=plop].min(), Iminus[data_null>=plop].max())
+            # print(Iplus[data_null>=plop].mean(), Iplus[data_null>=plop].min(), Iplus[data_null>=plop].max())
+            # print(Iminus[data_null>=plop][np.argmin(data_null[data_null>=plop])], Iplus[data_null>=plop][np.argmin(data_null[data_null>=plop])])
+            # print(Iminus[data_null>=plop][np.argmax(data_null[data_null>=plop])], Iplus[data_null>=plop][np.argmax(data_null[data_null>=plop])])
             
             data_null2 = [d[d >= 0] for d in data_null]
             rms = [d.std() for d in data_null2]
@@ -914,13 +952,7 @@ def run_nsc(activates, skip_fit, chi2_map_switch, maps_sz, nbs, which_nulls,
             print(classic_esti[2])
             print('')
             print('')
-            classic_save = save_path + os.path.basename(datafolder[:-1]) + '_' +\
-                key + '_classic_esti' + '_'+str(wl_min) +\
-                '-' + str(wl_max) + '_files_' + str(nb_files_data[0]) +\
-                '_' + str(nb_files_data[1])
 
-            if activate_spectral_binning:
-                classic_save = classic_save+'_sp'
             np.save(classic_save, classic_esti)
             sys.stdout.close()
             
@@ -937,10 +969,10 @@ def run_nsc(activates, skip_fit, chi2_map_switch, maps_sz, nbs, which_nulls,
         sample size.
         '''
         sz = int(1e+6)  # size of the sample of measured null depth.
-        # sz_list = np.array([np.size(d[(d >= bin_bounds[0]) &
-        #                               (d <= bin_bounds[1])])
-        #                     for d in data_null])
-        # sz = np.max(sz_list)  # size of the sample of measured null depth.
+        sz_list = np.array([np.size(d[(d >= bin_bounds[0]) &
+                                      (d <= bin_bounds[1])])
+                            for d in data_null])
+        sz = np.max(sz_list)  # size of the sample of measured null depth.
 
         null_axis = np.array([np.linspace(bin_bounds[0], bin_bounds[1], int(
             sz**0.5+1), retstep=False, dtype=np.float32)
@@ -1134,7 +1166,10 @@ def run_nsc(activates, skip_fit, chi2_map_switch, maps_sz, nbs, which_nulls,
             print('activate_preview_only', activate_preview_only)
             print('factor_minus, factor_plus',
                   factor_minus0[idx_null], factor_plus0[idx_null])
-            print('nb_frames_sorting_binning', nb_frames_sorting_binning)
+            print('nb frames sorting binning', nb_frames_sorting_binning)
+            print('Injection - shape array', injection.shape)
+            print('Injection dark - shape array', injection_dark.shape)
+            print('Remove dark', activate_remove_dark)
             print('')
 
             '''
@@ -1272,10 +1307,11 @@ def run_nsc(activates, skip_fit, chi2_map_switch, maps_sz, nbs, which_nulls,
                         ax.errorbar(null_axis[wl][:-1], null_pdf[wl],
                                     yerr=null_pdf_err[wl], fmt='.',
                                     markersize=20, label='Data')
-                        ax.errorbar(null_axis[wl][:-1],
-                                    out.reshape((wl_scale.size, -1))[wl],
-                                    markersize=5, lw=10, alpha=0.8,
-                                    label='Fit')
+                        if activate_draw_model:
+                            ax.errorbar(null_axis[wl][:-1],
+                                        out.reshape((wl_scale.size, -1))[wl],
+                                        markersize=5, lw=10, alpha=0.8,
+                                        label='Fit')
                         ax.grid()
                         if list(wl_idx).index(wl) >= len(wl_idx)-2 or\
                                 len(wl_idx) == 1:
@@ -1293,7 +1329,7 @@ def run_nsc(activates, skip_fit, chi2_map_switch, maps_sz, nbs, which_nulls,
                         ax.set_xticks(ax.get_xticks()[::2])  # , size=30)
                         ax.tick_params(axis='both', labelsize=labelsz-2)
                         exponent = np.floor(np.log10(null_pdf.max()))
-                        ax.set_ylim(-10**(exponent)/10, null_pdf.max()*1.05)
+                        ax.set_ylim(-10**(exponent)/10, max(null_pdf.max(), out.max())*1.05)
                         ax.text(0.7, 0.8, '%.0f nm' % (
                             wl_scale[wl]), va='center', transform=ax.transAxes,
                             fontsize=labelsz)
@@ -1321,7 +1357,7 @@ def run_nsc(activates, skip_fit, chi2_map_switch, maps_sz, nbs, which_nulls,
                         string = string + '_fit_pdf'
                     if activate_spectral_binning:
                         string = string + '_sb'
-                    plt.savefig(save_path+string+'_compiled.png', dpi=300)
+                    plt.savefig(save_path+string+'_compiled.png', dpi=150)
                     plt.savefig(save_path+string+'_compiled.pdf', format='pdf')
                     plt.close()
 
@@ -1357,14 +1393,11 @@ def run_nsc(activates, skip_fit, chi2_map_switch, maps_sz, nbs, which_nulls,
                             null_axis[wl][:-1], null_pdf[wl],
                             yerr=null_pdf_err[wl],
                             fmt='.', markersize=10, label='Data')
-                        if not skip_fit or 1:
+                        if activate_draw_model:
                             plt.errorbar(null_axis[wl][:-1],
                                          out.reshape((wl_scale.size, -1))[wl],
                                          markersize=10, lw=3, alpha=0.8,
                                          label='Fit')
-                        plt.errorbar(null_axis[wl][:-1],
-                                     out.reshape((wl_scale.size, -1))[wl],
-                                     markersize=5, lw=5, alpha=0.8, label='Fit')
                         plt.grid()
     #                    plt.legend(loc='best', fontsize=25)
                         if list(wl_idx).index(wl) >= len(wl_idx)-2 or\
@@ -1403,7 +1436,7 @@ def run_nsc(activates, skip_fit, chi2_map_switch, maps_sz, nbs, which_nulls,
                         string = string + '_fit_pdf'
                     if activate_spectral_binning:
                         string = string + '_sb'
-                    plt.savefig(save_path+string+'.png', dpi=300)
+                    plt.savefig(save_path+string+'.png', dpi=150)
 
                 '''
                 Display the details of the fit: make sure the reconstructed
@@ -1457,7 +1490,7 @@ def run_nsc(activates, skip_fit, chi2_map_switch, maps_sz, nbs, which_nulls,
                                  [0], '.', label='Iminus')
                         plt.plot(histop[wl][1][:-1], histop[wl]
                                  [0], '.', label='Iplus')
-                        if not skip_fit or 1:
+                        if activate_draw_model:
                             plt.plot(histom2[wl][1][:-1],
                                      histom2[wl][0], label='rv minus')
                             plt.plot(histop2[wl][1][:-1],
@@ -1497,27 +1530,32 @@ def run_nsc(activates, skip_fit, chi2_map_switch, maps_sz, nbs, which_nulls,
                         string = string + '_fit_pdf'
                     if activate_spectral_binning:
                         string = string + '_sb'
-                    plt.savefig(save_path+string+'.png', dpi=300)
+                    plt.savefig(save_path+string+'.png', dpi=150)
     #
                 '''
                 Plot the histogram of the photometries
                 '''
+                liste_rv_IA = cp.asnumpy(liste_rv_IA)
+                liste_rv_IB = cp.asnumpy(liste_rv_IB)
+                
                 gff.plot_photometries_histo(data_IA, dark['photo'][0], wl_scale,
                                             wl_idx0, nb_rows_plot, count,
                                             null_table[key][1][0]+1, save_path,
-                                            activate_spectral_binning,
+                                            activate_spectral_binning, skip_fit,
                                             key, basin_hopping_count, wl_min,
                                             wl_max, datafolder)
                 gff.plot_photometries_histo(data_IB, dark['photo'][1], wl_scale,
                                             wl_idx0, nb_rows_plot, count,
                                             null_table[key][1][1]+1, save_path,
-                                            activate_spectral_binning,
+                                            activate_spectral_binning, skip_fit,
                                             key, basin_hopping_count, wl_min,
                                             wl_max, datafolder)
 
                 '''
                 Injection histogram
                 '''
+                rv_injectionA = cp.asnumpy(rv_injectionA)
+                rv_injectionB  = cp.asnumpy(rv_injectionB)
                 f = plt.figure(figsize=(19.20, 10.80))
                 histo_injectionA = np.histogram(
                     injection[0], int(injection[0].size**0.5), density=True)
@@ -1526,22 +1564,20 @@ def run_nsc(activates, skip_fit, chi2_map_switch, maps_sz, nbs, which_nulls,
                 histo_injection_dkA = np.histogram(injection_dark[0], int(
                     injection_dark[0].size**0.5), density=True)
                 histo_injection_dkB = np.histogram(injection_dark[1], int(
-                    injection_dark[1].size**0.5), density=True)
+                    injection_dark[1].size**0.5), density=True)                
                 plt.title('%.0f nm' % wl_scale[wl], size=20)
                 plt.plot(histo_injectionA[1][:-1], histo_injectionA[0], 'o',
-                         markersize=5,
+                         markersize=5, lw=3,
                          label='Injection %s' % (null_table[key][1][0]+1))
                 plt.plot(histo_injectionB[1][:-1], histo_injectionB[0], 'o',
-                         markersize=5,
-                         label='Injection %s' % (null_table[key][1][1]+1))
+                         markersize=5, lw=3,
+                         label='Injection %s' % (null_table[key][1][1]+1))               
                 plt.plot(histo_injection_dkA[1][:-1], histo_injection_dkA[0],
-                         '+',
-                         markersize=8,
-                         label='Injection dark %s' % (null_table[key][1][0]+1))
+                          '+', markersize=8,
+                          label='Injection dark %s' % (null_table[key][1][0]+1))
                 plt.plot(histo_injection_dkB[1][:-1], histo_injection_dkB[0],
-                         '+',
-                         markersize=8,
-                         label='Injection dark %s' % (null_table[key][1][1]+1))
+                          '+', markersize=8,
+                          label='Injection dark %s' % (null_table[key][1][1]+1))
                 if activate_dark_correction:
                     histo_injectionA_before = np.histogram(
                         injection_saved[0], int(injection_saved[0].size**0.5),
@@ -1570,9 +1606,11 @@ def run_nsc(activates, skip_fit, chi2_map_switch, maps_sz, nbs, which_nulls,
                     '_injection_' + str(wl_min) + '-' + str(wl_max) + '_' +\
                     os.path.basename(datafolder[:-1]) +\
                     '_%.0f' % (wl_scale[wl_idx[-1]])
+                if not skip_fit:
+                    string = string + '_fit_pdf'
                 if activate_spectral_binning:
                     string = string + '_sb'
-                plt.savefig(save_path+string+'.png', dpi=300)
+                plt.savefig(save_path+string+'.png', dpi=150)
             else:
                 ''' Map the parameters space '''
                 print('Mapping parameters space')
@@ -1665,9 +1703,6 @@ def run_nsc(activates, skip_fit, chi2_map_switch, maps_sz, nbs, which_nulls,
                                (os.path.basename(config['zeta_coeff_path'])))
                     mlog.write('Time to load files: %.3f s\n' %
                                (stop_loading - start_loading))
-                    mlog.write('Initial conditions (na, mu, sig):\n')
-                    mlog.write(str(bounds_na)+str(bounds_mu) +
-                               str(bounds_sig)+'\n')
                     mlog.write('Sizes:\n')
                     mlog.write('%s\t%s\t%s\n' %
                                (map_na_sz, map_mu_sz, map_sig_sz))
@@ -1773,4 +1808,5 @@ def run_nsc(activates, skip_fit, chi2_map_switch, maps_sz, nbs, which_nulls,
     elif chi2_map_switch:
         return chi2map, map_mu_opd, map_na, map_sig_opd, argmin, data_null, null_pdf
     else:
-        return popt[0], uncertainties, chi2, data_null, null_pdf
+        return popt[0], uncertainties, chi2, data_null, null_pdf,\
+            (Iminus, Iplus), data, dark

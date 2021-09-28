@@ -61,15 +61,13 @@ from barnacle.glint_functions import gaussian_with_offset,\
 NB_TRACKS = 16
 
 
-def do_sectral_calibration(data_path, dark_path, wavelength, save, output_path,
+def do_sectral_calibration(data_path, wavelength, save, output_path,
                            prompt_spectral_resolution=True, plotting=True):
     """
     Wrapper to get and save the spectral calibration for each channel at once.
 
     :param data_path: path to the data to load.
     :type data_list0: string
-    :param dark_path: path where the averaged dark files are.
-    :type dark_path: string
     :param wavelength: list of the wavelengths to use for
                         the spectral calibration.
     :type wavelength: list-like
@@ -100,7 +98,7 @@ def do_sectral_calibration(data_path, dark_path, wavelength, save, output_path,
     # Define bounds of each channel
     channel_pos, sep = get_channel_positions(NB_TRACKS)
 
-    calib_pos = extract_wl_pos(data_list0, dark_path, wavelength,
+    calib_pos = extract_wl_pos(data_list0, wavelength,
                                channel_pos, sep, save, output_path, plotting)
 
     coeff_poly_wl_to_px, coeff_poly_px_to_wl, spectral_psf = \
@@ -121,7 +119,7 @@ def do_sectral_calibration(data_path, dark_path, wavelength, save, output_path,
     return coeff_poly_wl_to_px, coeff_poly_px_to_wl, spectral_psf
 
 
-def extract_wl_pos(data_list0, dark_path, wavelength,
+def extract_wl_pos(data_list0, wavelength,
                    channel_pos, sep, save, output_path, plotting):
     """
     Extract the position of the fluxes for a given wavelength.
@@ -129,8 +127,6 @@ def extract_wl_pos(data_list0, dark_path, wavelength,
     :param data_list0: contains sub-lists. Each sub-list contains the data
                         acquired at one wavelength.
     :type data_list0: list
-    :param dark_path: path where the averaged dark files are.
-    :type dark_path: string
     :param wavelength: list of wavelength to set the spectral calibration.
     :type wavelength: list
     :param channel_pos: positions of the channels.
@@ -150,8 +146,8 @@ def extract_wl_pos(data_list0, dark_path, wavelength,
 
     """
     calib_pos = []
-    dark = np.load(dark_path+'superdark.npy')
-    dark_per_channel = np.load(dark_path+'superdarkchannel.npy')
+    dark = np.load(output_path+'superdark.npy')
+    dark_per_channel = np.load(output_path+'superdarkchannel.npy')
     super_img = np.zeros(dark.shape)
     super_nb_img = 0.
     slices = np.zeros_like(dark_per_channel)

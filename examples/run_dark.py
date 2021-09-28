@@ -7,12 +7,12 @@ from barnacle.calibration.dark import *
 
 ''' Settings '''
 save = True
-monitor = True
+monitor = False
 nb_files = (None, None)
 edges = -500, 500
 
 ''' Inputs '''
-datafolder = 'data202104/20210429/alfBoo_1/'
+datafolder = '20191128/dark/'
 data_path = '//tintagel.physics.usyd.edu.au/snert/'+'/GLINTData/'+datafolder
 # data_path = '/mnt/96980F95980F72D3/glintData/'+datafolder
 

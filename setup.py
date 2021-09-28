@@ -17,6 +17,6 @@ setup(
             Nulling Interferometry',
         'Programming Language :: Python :: 3.8'
     ],
-    install_requires=["astropy", "cupy", "functools", "h5py", "matplotlib", "numba",
+    install_requires=["cupy", "functools", "h5py", "matplotlib", "numba",
                       "numpy", "scipy"]
 )

@@ -1550,7 +1550,7 @@ def update_label(old_label, exponent_text):
 
 def plot_photometries_histo(data_I, dk_photo, wl_scale, wl_idx0, nb_rows_plot,
                             count, photo_id, save_path,
-                            activate_spectral_binning, key,
+                            activate_spectral_binning, skip_fit, key,
                             basin_hopping_count, wl_min, wl_max, datafolder):
     """Plot the histogram of the photometries per spectral channel
 
@@ -1578,9 +1578,10 @@ def plot_photometries_histo(data_I, dk_photo, wl_scale, wl_idx0, nb_rows_plot,
         count = 0
         for wl in wl_idx:
             histo_I = np.histogram(data_I[wl], int(
-                data_I[wl].size**0.5), density=True)
+                data_I[wl].size**0.5), density=True)            
             histo_dI = np.histogram(dk_photo[wl], int(
                 np.size(dk_photo[wl])**0.5), density=True)
+            
             if len(wl_idx) > 1:
                 ax = f.add_subplot(nb_rows_plot, 2, count+1)
             else:
@@ -1591,7 +1592,7 @@ def plot_photometries_histo(data_I, dk_photo, wl_scale, wl_idx0, nb_rows_plot,
                      markersize=5,
                      label='P%s' % (photo_id))
             plt.plot(histo_dI[1][:-1], histo_dI[0],
-                     '.', markersize=5, label='Dark')
+                     '.', markersize=5, label='Dark')            
             plt.grid()
             plt.legend(loc='best', fontsize=15)
             if list(wl_idx).index(wl) <= 1 or len(wl_idx) == 1:
@@ -1607,6 +1608,8 @@ def plot_photometries_histo(data_I, dk_photo, wl_scale, wl_idx0, nb_rows_plot,
             str(wl_min) + '-' + str(wl_max) + '_' +\
             os.path.basename(datafolder[:-1]) +\
             '_%.0f' % (wl_scale[wl_idx[-1]])
+        if not skip_fit:
+            string = string + '_fit_pdf'
         if activate_spectral_binning:
             string = string + '_sb'
         plt.savefig(save_path+string+'.png', dpi=150)

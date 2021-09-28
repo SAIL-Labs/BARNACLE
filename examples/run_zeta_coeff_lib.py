@@ -20,7 +20,6 @@ datafolder = 'data202105/20210503/zeta/'
 # root = "/mnt/96980F95980F72D3/glint/"
 root = "//tintagel.physics.usyd.edu.au/snert/"
 output_path = root+'GLINTprocessed/'+datafolder
-dark_path = output_path
 spectral_calibration_path = output_path
 geometric_calibration_path = output_path
 # data_path = '/mnt/96980F95980F72D3/glint_data/'+datafolder
@@ -31,9 +30,9 @@ wl_to_px_coeff = np.load(
 px_to_wl_coeff = np.load(
     spectral_calibration_path+'20210429_px_to_wl.npy')
 
-zeta_coeff = do_zeta_coeff(data_path, dark_path, output_path,
-                           geometric_calibration_path,
-                           wl_to_px_coeff, px_to_wl_coeff, mode_flux,
-                           spectral_binning, wl_bin_min, wl_bin_max,
-                           bandwidth_binning, nb_img,
-                           save, plotting=True)
+zeta_coeff = do_zeta_coeff(data_path, output_path,
+                              geometric_calibration_path,
+                              wl_to_px_coeff, px_to_wl_coeff, mode_flux,
+                              spectral_binning, wl_bin_min, wl_bin_max,
+                              bandwidth_binning, nb_img,
+                              save, plotting=True)

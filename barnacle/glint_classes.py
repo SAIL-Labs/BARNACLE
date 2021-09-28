@@ -33,13 +33,13 @@ class File(object):
             If ``True``, swappes the 2nd and 3rd axis of the datacube.
     """
 
-    def __init__(self, data=None, nbimg=(None, None)):
+    def __init__(self, data=None, nbimg=(0, 1)):
         """
         Init the instance class by calling the ``loadfile' method.
         """
         self.loadfile(data, nbimg)
 
-    def loadfile(self, data=None, nbimg=(None, None)):
+    def loadfile(self, data=None, nbimg=(0, 1)):
         """ 
         Load the datacube when a File-object is created.
 
@@ -185,6 +185,19 @@ class Null(File):
     Class handling the measurement of the null and photometries 
     from bias-corrected frame.
     """
+    
+    def __init__(self, data=None, nbimg=(0, 1)):
+        super().__init__(data, nbimg)
+        self.p1, self.p1_err = np.array([0.]), np.array([0.])
+        self.p2, self.p2_err = np.array([0.]), np.array([0.])
+        self.p3, self.p3_err = np.array([0.]), np.array([0.])
+        self.p4, self.p4_err = np.array([0.]), np.array([0.])
+        self.Iminus1, self.Iplus1 = np.array([0.]), np.array([0.])
+        self.Iminus2, self.Iplus2 = np.array([0.]), np.array([0.])
+        self.Iminus3, self.Iplus3 = np.array([0.]), np.array([0.])
+        self.Iminus4, self.Iplus4 = np.array([0.]), np.array([0.])
+        self.Iminus5, self.Iplus5 = np.array([0.]), np.array([0.])
+        self.Iminus6, self.Iplus6 = np.array([0.]), np.array([0.])
 
     def getChannels(self, channel_pos, sep, spatial_axis, **kwargs):
         """
@@ -904,7 +917,7 @@ class Null(File):
         self.px_scale = np.array([self.binning(
             self.px_scale[i], bandwith_px[i], axis=0, avg=True) for i in range(self.wl_scale.shape[0])])
 
-    def save(self, path, date):
+    def save(self, path, date, **kwargs):
         """
         Saves intermediate products for further analyses, into HDF5 file format.
         The different intensities and null are gathered into dictionaries.
@@ -935,12 +948,6 @@ class Null(File):
                   'p2': self.p2, 'p2err': self.p2_err,
                   'p3': self.p3, 'p3err': self.p3_err,
                   'p4': self.p4, 'p4err': self.p4_err,
-                  #                  'null1':self.null1, 'null1err':self.null1_err,
-                  #                  'null2':self.null2, 'null2err':self.null2_err,
-                  #                  'null3':self.null3, 'null3err':self.null3_err,
-                  #                  'null4':self.null4, 'null4err':self.null4_err,
-                  #                  'null5':self.null5, 'null5err':self.null5_err,
-                  #                  'null6':self.null6, 'null6err':self.null6_err,
                   'Iminus1': self.Iminus1, 'Iplus1': self.Iplus1,
                   'Iminus2': self.Iminus2, 'Iplus2': self.Iplus2,
                   'Iminus3': self.Iminus3, 'Iplus3': self.Iplus3,
@@ -968,6 +975,9 @@ class Null(File):
                     f[key].attrs['comment'] = beams_couple[key]
                 except KeyError:
                     pass
+            
+            for key, value in kwargs.items():
+                f.create_dataset(key, data=value)
 
 
 class ChipProperties(Null):

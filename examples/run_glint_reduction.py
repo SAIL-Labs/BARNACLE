@@ -8,12 +8,11 @@ Created on Thu May 13 12:13:55 2021
 from barnacle.science.glint_reduction import *
 
 ''' Inputs '''
-datafolder = 'data202104/20210429/hr5512_2/'
+datafolder = '20191128/turbulence/'
 #    root = "C:/Users/marc-antoine/glint/"
 # root = "/mnt/96980F95980F72D3/glint/"
 root = "//tintagel.physics.usyd.edu.au/snert/"
 output_path = root+'GLINTprocessed/'+datafolder
-dark_path = output_path
 spectral_calibration_path = output_path
 geometric_calibration_path = output_path
 data_path = '//tintagel.physics.usyd.edu.au/snert/GLINTData/'+datafolder
@@ -23,7 +22,7 @@ data_path = '//tintagel.physics.usyd.edu.au/snert/GLINTData/'+datafolder
 ''' Settings '''
 nb_img = (0, None)
 debug = False
-save = True
+save = False
 nb_files = (0, None)
 bin_frames = False
 nb_frames_to_bin = 50
@@ -41,12 +40,12 @@ plot_name = datafolder.split('/')[-2]
 
 wl_bin_bounds = (wl_bin_min, wl_bin_max)
 spectral_calibration_files = (spectral_calibration_path +
-                              '20210429_wl_to_px.npy',
+                              '20200130_wl_to_px.npy',
                               spectral_calibration_path +
-                              '20210429_px_to_wl.npy')
+                              '20200130_px_to_wl.npy')
 monitor_amplitude, monitor_null, monitor_photo, wl_scale = \
-    reduce_data(data_path, plot_name, dark_path, output_path, suffix, nb_files,
-                nb_img, nb_frames_to_bin,
+    reduce_data(data_path, plot_name, output_path, suffix, nb_files, nb_img,
+                nb_frames_to_bin,
                 geometric_calibration_path, spectral_calibration_files,
                 save, bin_frames, debug, spectral_binning, wl_bin_bounds,
                 bandwidth_binning,

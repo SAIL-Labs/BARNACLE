@@ -32,7 +32,7 @@ activate_spectral_binning = False
 activate_time_binning_photometry = False
 activate_use_antinull = True
 activate_use_photometry = False
-activate_remove_dark = False
+activate_remove_dark = True
 activate_draw_model = True
 # Use the measured zeta coeff. If False, value are set to 0.5
 activate_zeta = True
@@ -41,9 +41,9 @@ skip_fit = True
 # Explore parameter space instead of fit
 chi2_map_switch = False
 # Map the parameters space over astronull, DeltaPhi mu and sigma
-map_na_sz = 20
+map_na_sz = 10
 map_mu_sz = 100
-map_sig_sz = 10
+map_sig_sz = 20
 # Binning the frames before any calculation
 global_binning = 1
 # Total number of elements to generate for the MC
@@ -55,14 +55,14 @@ nb_frames_sorting_binning = 1
 # Number of frames to bin to go toward a dark-free histogram of injection
 nb_frames_binning_photometry = -1
 # Which data files to load
-for k in range(0,1):
-    nb_files_data = (0, None)
+for k in range(1000,1001):
+    nb_files_data = (0, 1000)
     # Which dark files to load
-    nb_files_dark = (0, 1000)
+    nb_files_dark = (0, 10)
     # lower and upper bound of the iteration loop for basin hopping method
     basin_hopping_nloop = (10*k, 10*k+10)
     # Baselines to process
-    which_nulls = ['null1', 'null4'][:1]
+    which_nulls = ['null1', 'null4'][1:]
     
     # Lower bound of the bandwidth to process
     wl_min = 1525

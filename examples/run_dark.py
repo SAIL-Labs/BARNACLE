@@ -10,9 +10,10 @@ save = True
 monitor = False
 nb_files = (None, None)
 edges = -500, 500
+keyword = 'dark_01'
 
 ''' Inputs '''
-datafolder = '20191128/dark/'
+datafolder = '20191212/'
 data_path = '//tintagel.physics.usyd.edu.au/snert/'+'/GLINTData/'+datafolder
 # data_path = '/mnt/96980F95980F72D3/glintData/'+datafolder
 
@@ -21,4 +22,4 @@ output_path = '//tintagel.physics.usyd.edu.au/snert/GLINTprocessed/'+datafolder
 # output_path = '/mnt/96980F95980F72D3/GLINTprocessed/'+datafolder
 
 dk = get_average_dark(
-    data_path, output_path, nb_files, save, monitor, edges)
+    data_path, output_path, nb_files, save, monitor, edges, keyword)

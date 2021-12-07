@@ -264,29 +264,35 @@ def load_data(data, wl_edges, null_key, nulls_to_invert, *args, **kwargs):
 
     for d in data:
         with h5py.File(d, 'r') as data_file:
+            try:
+                mask = np.where(np.array(data_file['nb_frames_null%s'%(indexes[0])]) >=100)[0]
+                # mask = np.arange(np.array(data_file['Iminus%s' % (indexes[0])]).shape[0])
+            except KeyError:
+                mask = np.arange(np.array(data_file['Iminus%s' % (indexes[0])]).shape[0])
+
             wl_scale.append(np.array(data_file['wl_scale']))
 
 #            null_data.append(np.array(data_file['null%s'%(indexes[0])]))
-            Iminus_data.append(np.array(data_file['Iminus%s' % (indexes[0])]))
-            Iplus_data.append(np.array(data_file['Iplus%s' % (indexes[0])]))
+            Iminus_data.append(np.array(data_file['Iminus%s' % (indexes[0])])[mask])
+            Iplus_data.append(np.array(data_file['Iplus%s' % (indexes[0])])[mask])
 
             # Fill with beam A intensity
-            photo_data[0].append(np.array(data_file['p%s' % (indexes[1])]))
+            photo_data[0].append(np.array(data_file['p%s' % (indexes[1])])[mask])
             # Fill with beam B intensity
-            photo_data[1].append(np.array(data_file['p%s' % (indexes[2])]))
+            photo_data[1].append(np.array(data_file['p%s' % (indexes[2])])[mask])
             # Fill with beam A error
             photo_err_data[0].append(
-                np.array(data_file['p%serr' % (indexes[1])]))
+                np.array(data_file['p%serr' % (indexes[1])])[mask])
             # Fill with beam B error
             photo_err_data[1].append(
-                np.array(data_file['p%serr' % (indexes[2])]))
+                np.array(data_file['p%serr' % (indexes[2])])[mask])
 
             if 'null%s' % (indexes[0]) in nulls_to_invert:
-                n = np.array(data_file['Iplus%s' % (indexes[0])]) / \
-                    np.array(data_file['Iminus%s' % (indexes[0])])
+                n = np.array(data_file['Iplus%s' % (indexes[0])])[mask] / \
+                    np.array(data_file['Iminus%s' % (indexes[0])])[mask]
             else:
-                n = np.array(data_file['Iminus%s' % (indexes[0])]) / \
-                    np.array(data_file['Iplus%s' % (indexes[0])])
+                n = np.array(data_file['Iminus%s' % (indexes[0])])[mask] / \
+                    np.array(data_file['Iplus%s' % (indexes[0])])[mask]
             null_data.append(n)
 
     # Merge data along frame axis

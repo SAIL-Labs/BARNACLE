@@ -8,7 +8,7 @@ Created on Thu May 13 12:13:55 2021
 from barnacle.science.glint_reduction import *
 
 ''' Inputs '''
-datafolder = '20191128/turbulence/'
+datafolder = '20191212/'
 #    root = "C:/Users/marc-antoine/glint/"
 # root = "/mnt/96980F95980F72D3/glint/"
 root = "//tintagel.physics.usyd.edu.au/snert/"
@@ -22,7 +22,7 @@ data_path = '//tintagel.physics.usyd.edu.au/snert/GLINTData/'+datafolder
 ''' Settings '''
 nb_img = (0, None)
 debug = False
-save = False
+save = True
 nb_files = (0, None)
 bin_frames = False
 nb_frames_to_bin = 50
@@ -33,16 +33,16 @@ mode_flux = 'raw'
 activate_estimate_spectrum = False
 nb_files_spectrum = (5000, 10000)
 wavelength_bounds = (1400, 1700)
-suffix = 'n1n4'
+suffix = 'dark_01'
 #    ron = 0
 plot_name = datafolder.split('/')[-2]
 
 
 wl_bin_bounds = (wl_bin_min, wl_bin_max)
 spectral_calibration_files = (spectral_calibration_path +
-                              '20200130_wl_to_px.npy',
+                              'wl_to_px.npy',
                               spectral_calibration_path +
-                              '20200130_px_to_wl.npy')
+                              'px_to_wl.npy')
 monitor_amplitude, monitor_null, monitor_photo, wl_scale = \
     reduce_data(data_path, plot_name, output_path, suffix, nb_files, nb_img,
                 nb_frames_to_bin,

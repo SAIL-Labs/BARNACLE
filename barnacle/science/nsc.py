@@ -1571,13 +1571,14 @@ def run_nsc(activates, skip_fit, chi2_map_switch, maps_sz, nbs, which_nulls,
                          label='Injection %s' % (null_table[key][1][0]+1))
                 plt.plot(histo_injectionB[1][:-1], histo_injectionB[0], 'o',
                          markersize=5, lw=3,
-                         label='Injection %s' % (null_table[key][1][1]+1))               
-                plt.plot(histo_injection_dkA[1][:-1], histo_injection_dkA[0],
-                          '+', markersize=8,
-                          label='Injection dark %s' % (null_table[key][1][0]+1))
-                plt.plot(histo_injection_dkB[1][:-1], histo_injection_dkB[0],
-                          '+', markersize=8,
-                          label='Injection dark %s' % (null_table[key][1][1]+1))
+                         label='Injection %s' % (null_table[key][1][1]+1))
+                if not activate_remove_dark:
+                    plt.plot(histo_injection_dkA[1][:-1], histo_injection_dkA[0],
+                              '+', markersize=8,
+                              label='Injection dark %s' % (null_table[key][1][0]+1))
+                    plt.plot(histo_injection_dkB[1][:-1], histo_injection_dkB[0],
+                              '+', markersize=8,
+                              label='Injection dark %s' % (null_table[key][1][1]+1))
                 if activate_dark_correction:
                     histo_injectionA_before = np.histogram(
                         injection_saved[0], int(injection_saved[0].size**0.5),
@@ -1806,7 +1807,8 @@ def run_nsc(activates, skip_fit, chi2_map_switch, maps_sz, nbs, which_nulls,
     elif activate_save_classic_esti:
         return avg, std, wl_scale, data_null
     elif chi2_map_switch:
-        return chi2map, map_mu_opd, map_na, map_sig_opd, argmin, data_null, null_pdf
+        return chi2map, map_mu_opd, map_na, map_sig_opd, argmin, data_null,\
+            null_axis, null_pdf
     else:
-        return popt[0], uncertainties, chi2, data_null, null_pdf,\
+        return popt[0], uncertainties, chi2, data_null, null_axis, null_pdf,\
             (Iminus, Iplus), data, dark

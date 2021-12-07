@@ -110,7 +110,7 @@ def get_histogram(data, bins):
     return histo
 
 
-def get_average_dark(data_path, output_path, nb_files, save, monitor, edges):
+def get_average_dark(data_path, output_path, nb_files, save, monitor, edges, keyword):
     """
     Calculate the average dark for the whole frame and channel by channel.
 
@@ -127,13 +127,15 @@ def get_average_dark(data_path, output_path, nb_files, save, monitor, edges):
     :type monitor: bool
     :param edges: minimal and maximal values of the histograms
     :type edges: tuple
+    :param keyword: keyword to select the dark files to process
+    :type output_path: string
     :return: the average dark on the whole frame and per channel.
     :rtype: tuple
 
     """
     edge_min, edge_max = edges
     dark_list = [data_path+f for f in os.listdir(data_path)
-                 if 'dark' in f and not '.txt' in f][nb_files[0]:nb_files[1]]
+                 if keyword in f and not '.txt' in f][nb_files[0]:nb_files[1]]
 
     if not os.path.exists(output_path):
         os.makedirs(output_path)

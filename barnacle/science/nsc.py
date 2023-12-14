@@ -121,11 +121,13 @@ from scipy.optimize import curve_fit
 from timeit import default_timer as time
 import os
 import sys
-from barnacle.science import nsc_lib as gff
+import nsc_lib as gff
 import pickle
 from datetime import datetime
-from barnacle.science.nsc_config import prepareConfig
-from barnacle.glint_functions import gaussian_curve as gaussian
+# from barnacle.science.nsc_config import prepareConfig
+# from barnacle.glint_functions import gaussian_curve as gaussian
+from nsc_config import prepareConfig
+from glint_functions import gaussian_curve as gaussian
 
 plt.ioff()
 
@@ -326,6 +328,7 @@ def nsc_function(bins0, na, mu_opd, sig_opd, *args):
                     accum[k] += pdf_null / cp.sum(pdf_null)
 
             else:
+                print('BORNE6')
                 rv_interfminus, rv_interfplus =\
                     gff.computeNullDepthNoAntinull(rv_IA, rv_IB, wl_scale0[k],
                                                    rv_opd, rv_dark_Iminus,
@@ -885,7 +888,7 @@ def run_nsc(activates, skip_fit, chi2_map_switch, maps_sz, nbs, which_nulls,
             mask_frames = np.unique(np.where(mask_null == False)[1])
             mask_null[:, mask_frames] = False
         else:
-            mask_null = np.ones_like(data_null, dtype=np.bool)
+            mask_null = np.ones_like(data_null, dtype=bool)
 
         '''
         Creation of the x-axis of the histogram (one per wavelength)

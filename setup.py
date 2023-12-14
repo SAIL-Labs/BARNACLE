@@ -15,8 +15,8 @@ setup(
         'Intended Audience :: Professional Astronomers',
         'Topic :: High Angular Resolution Astronomy :: Interferometry :: \
             Nulling Interferometry',
-        'Programming Language :: Python :: 3.8'
+        'Programming Language :: Python :: 3.11'
     ],
-    install_requires=["cupy", "functools", "h5py", "matplotlib", "numba",
+    install_requires=["cupy", "h5py", "matplotlib", "numba",
                       "numpy", "scipy"]
 )

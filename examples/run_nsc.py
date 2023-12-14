@@ -4,7 +4,7 @@ This script is an example on how to use the library ``nsc.py``
 to use the NSC method to get self-calibrated null depth.
 """
 
-from barnacle.science.nsc import run_nsc
+# from barnacle.science.nsc import run_nsc
 
 # =============================================================================
 # Settings

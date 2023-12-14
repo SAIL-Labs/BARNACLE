@@ -224,11 +224,11 @@ class Null(File):
             **slices_axes**: ndarray
                 Spatial coordinates of each channel
         """
-        self.slices = np.array([self.data[:, np.int(
-            np.around(pos-sep/2)):np.int(np.around(pos+sep/2)), :] for pos in channel_pos])
+        self.slices = np.array([self.data[:, int(
+            np.around(pos-sep/2)):int(np.around(pos+sep/2)), :] for pos in channel_pos])
         self.slices = np.transpose(self.slices, (1, 3, 0, 2))
-        self.slices_axes = np.array([spatial_axis[np.int(
-            np.around(pos-sep/2)):np.int(np.around(pos+sep/2))] for pos in channel_pos])
+        self.slices_axes = np.array([spatial_axis[int(
+            np.around(pos-sep/2)):int(np.around(pos+sep/2))] for pos in channel_pos])
         # self.slices = self.slices[:,:,:,10-4:10+5]
         # self.slices_axes  = self.slices_axes[:,10-4:10+5]
         self.slices0 = self.slices.copy()
@@ -529,12 +529,12 @@ class Null(File):
         end = np.around(max(end_wl))
 
         # self.wl_scale = np.array([np.arange(start, end, np.around(px_to_wl_coeff[i,0])) for i in which_tracks])
-        # self.px_scale = np.array([np.around(wl_to_px_poly[i](self.wl_scale[i])) for i in which_tracks], dtype=np.int)
+        # self.px_scale = np.array([np.around(wl_to_px_poly[i](self.wl_scale[i])) for i in which_tracks], dtype=int)
         step_wl = np.mean(px_to_wl_coeff[:, 0])
         self.wl_scale = np.array(
             [np.arange(start, end, step_wl) for i in which_tracks])
         self.px_scale = np.array([np.around(wl_to_px_poly[i](
-            self.wl_scale[i])) for i in which_tracks], dtype=np.int)
+            self.wl_scale[i])) for i in which_tracks], dtype=int)
 
     def error_null(self, null, Iminus, Iplus, Iminus_err, Iplus_err):
         """
@@ -876,7 +876,7 @@ class Null(File):
                     'Bandwidth larger than selected spectrum, the whole spectrum will be binned.')
         else:
             bandwith_px = np.around(abs(bandwidth * wl_to_px_coeff[:, 0]))
-            bandwith_px = bandwith_px.astype(np.int)
+            bandwith_px = bandwith_px.astype(int)
             bandwith_px[bandwith_px == 0] = 1
 
         self.bandwith_px = bandwith_px

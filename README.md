@@ -13,6 +13,8 @@ The documentation is very similar to the 1st version, I redirect there for now.
 [Documentation is here](https://glintpipeline.readthedocs.io/en/latest/)
 
 ## Installation
+Open a terminal in the folder `BARNACLE' where ``setup.py'' is.
+Use the command ```pip install .```
 
 ## Credits
 Marc-Antoine Martinod
